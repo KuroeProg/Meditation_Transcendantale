@@ -1,0 +1,2 @@
+# Meditation_Transcendantale
+ft_transcendance 42
