@@ -3,19 +3,19 @@ NAME = transcendance
 all: build
 
 build:
-	cd transcendance && docker-compose build
+	cd transcendance && docker compose build
 
 up:
-	cd transcendance && docker-compose up
+	cd transcendance && docker compose up
 
 down:
-	cd transcendance && docker-compose down
+	cd transcendance && docker compose down
 
 clean:
-	cd transcendance && docker-compose down -v
+	cd transcendance && docker compose down -v
 
 fclean: clean
-	cd transcendance && docker-compose down --rmi all -v
+	cd transcendance && docker compose down --rmi all -v
 
 re: fclean all
 
