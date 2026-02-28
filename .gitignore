@@ -1,0 +1,19 @@
+*.key
+*.crt
+
+database/data/
+
+.env
+
+# ELK 
+monitoring/elasticsearch/data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+
+node_modules/
+dist/
+.DS_Store
