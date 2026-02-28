@@ -1,0 +1,98 @@
+version: '3.8'
+
+networks:
+  frontend_net:
+  backend_net:
+  monitor_net:
+
+services:
+  # bdd
+  db:
+    image: postgres:15
+    container_name: transcendence_db
+    volumes:
+      - ./database/data:/var/lib/postgresql/data
+    env_file: .env # Les secrets ne sont pas sur Git 
+    restart: always
+    networks:
+      - backend_net
+
+  # Adil - Django / backend
+  backend:
+    build: ./backend
+    container_name: transcendence_back
+    depends_on:
+      - db
+    env_file: .env
+    restart: always
+    networks:
+      - frontend_net
+      - backend_net
+
+  # Alexis - frontend
+  frontend:
+    build: ./frontend
+    container_name: transcendence_front
+    restart: always
+    networks:
+      - frontend_net
+
+  # Cloé - Cyber
+  nginx:
+    build: ./nginx
+    container_name: transcendence_nginx
+    ports:
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+    restart: always
+    networks:
+      - frontend_net
+      - monitor_net
+
+  # Cloe - Monitoring
+  prometheus:
+    image: prom/prometheus
+    container_name: transcendence_prom
+    volumes:
+      - ./monitoring/prometheus:/etc/prometheus
+    restart: always
+    networks:
+      - monitor_net
+      - backend_net
+
+  grafana:
+    image: grafana/grafana
+    container_name: transcendence_grafana
+    ports:
+      - "3001:3000" # secure access dashboard [cite: 447]
+    depends_on:
+      - prometheus
+    restart: always
+    networks:
+      - monitor_net
+
+# Théo/Mileum - Log Management
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: transcendence_elastic
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # À activer plus tard (cyber)
+    restart: always
+    networks:
+      - monitor_net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.2
+    container_name: transcendence_kibana
+    environment:
+      - SERVER_BASEPATH="/kibana"
+      - SERVER_REWRITEBASEPATH="true"
+    depends_on:
+      - elasticsearch
+    restart: always
+    # On expose pas le port 5601 sur le net on passe par le 443
+    networks:
+      - monitor_net
